@@ -1,0 +1,55 @@
+networks:
+  kr_net:
+
+volumes:
+  db_volume:
+
+services:
+
+
+  db:
+    build:
+      context: DB
+    ports:
+      - "54321:5432"
+    container_name:
+      db_postgres
+    volumes:
+      - db_volume:/home/
+    networks:
+      - kr_net
+    restart: always
+
+  pgadmin:
+    build:
+      context: pgadmin
+    ports:
+      - "8080:80"
+    container_name:
+      pgadmin
+    networks:
+      - kr_net
+    depends_on:
+      - db
+
+  api_server:
+    build:
+      context: api_server
+    ports:
+      - "5252:5252"
+    container_name:
+      api_server
+    networks:
+      - kr_net
+    depends_on:
+      - db
+
+#  nginx:
+#    image: nginx:latest
+#    ports:
+#      - "81:80"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf
+#    depends_on:
+#      - exchanger
+#    restart: always
