@@ -24,8 +24,13 @@ def create_user(admin_key, user_name, user_password):
     """
     global db_connection
     try:
+        # Проверяем существование пользователя
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT id FROM users WHERE name = %s", (user_name,))
+        if cursor.fetchone():
+            raise ValueError("Пользователь с таким именем уже существует")
         # Определяем, будет ли пользователь администратором
-        is_admin = admin_key == "goool"
+        is_admin = hashlib.sha256(f"{admin_key}".encode()).hexdigest() == "cc43d29286e7173dda86d4acefcfca710fc823c550f8f9428b2cb9e1efc62a26"
         # Открываем курсор для выполнения запроса
         cursor = db_connection.cursor()
         # SQL-запрос для добавления нового пользователя
@@ -39,23 +44,38 @@ def create_user(admin_key, user_name, user_password):
         user_id = cursor.fetchone()[0]
         # Фиксируем изменения в базе данных
         db_connection.commit()
-        # Закрываем курсор
-        cursor.close()
         print(f"Пользователь с ID {user_id} успешно создан. Администратор: {is_admin}")
-        # Возвращаем подтверждение создания
-        return {"message": "Пользователь успешно создан", "user_id": user_id, "is_admin": is_admin}
+        # Генерация идентификатора и добавление в таблицу identifiers
+        user_identifier = hashlib.sha256(f"{user_name}{user_password}".encode()).hexdigest()
+        query_identifier = """
+        INSERT INTO identifiers (user_id, identifier)
+        VALUES (%s, %s)
+        """
+        cursor.execute(query_identifier, (user_id, user_identifier))
+        db_connection.commit()
+        return {"message": "Пользователь успешно создан"}
     except Exception as e:
         print(f"Ошибка при создании пользователя: {e}")
-        raise ValueError("Не удалось создать пользователя")
+        db_connection.rollback()
+        raise e
+    finally:
+        cursor.close()
 
 
-def new_recipe(user_id, recipe_name, ingredients, way_to_cook):
+def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
     global db_connection
     if not recipe_name or not ingredients or not way_to_cook:
         raise ValueError("Название рецепта, способ приготовления и список ингредиентов не могут быть пустыми")
     try:
-        # Проверяем, является ли пользователь администратором
         cursor = db_connection.cursor()
+        # Найти пользователя по ключу
+        query_user = "SELECT user_id FROM identifiers WHERE identifier = %s"
+        cursor.execute(query_user, (user_key,))
+        user_id = cursor.fetchone()
+        if not user_id:
+            raise ValueError("Пользователь не найден")
+        user_id = user_id[0]
+        # Проверяем, является ли пользователь администратором
         admin_check_query = """
         SELECT is_admin FROM users WHERE id = %s;
         """
@@ -176,23 +196,23 @@ def get_recipe():
         print(f"Ошибка при получении списка рецептов: {e}")
         raise ValueError("Не удалось получить список рецептов")
 
-def get_favourite(user_id):
+def get_favourite(user_key):
     """
     Получает список любимых рецептов пользователя с их ингредиентами.
-    :param user_id: Идентификатор пользователя.
+    :param user_key: Идентификатор пользователя.
     :return: Список словарей с информацией о любимых рецептах и их ингредиентах.
     """
     global db_connection
     try:
         # Открываем курсор для выполнения запроса
         cursor = db_connection.cursor()
-        # Проверяем, существует ли пользователь
-        user_check_query = """
-        SELECT id FROM users WHERE id = %s;
-        """
-        cursor.execute(user_check_query, (user_id,))
-        if not cursor.fetchone():
+        # Найти пользователя по ключу
+        query_user = "SELECT user_id FROM identifiers WHERE identifier = %s"
+        cursor.execute(query_user, (user_key,))
+        user_id = cursor.fetchone()
+        if not user_id:
             raise ValueError("Пользователь не найден")
+        user_id = user_id[0]
         # SQL-запрос для получения любимых рецептов
         select_favourites_query = """
         SELECT r.id, r.name, r.way_to_cook
@@ -242,19 +262,23 @@ def get_user_indent(username, password):
     """
     cursor = db_connection.cursor()
     try:
-        query = "SELECT passwd FROM users WHERE name = %s"
-        cursor.execute(query, (username,))
+        # Поиск идентификатора пользователя
+        query = """
+        SELECT u.id, i.identifier
+        FROM users u
+        JOIN identifiers i ON u.id = i.user_id
+        WHERE u.name = %s AND u.passwd = %s
+        """
+        cursor.execute(query, (username, password))
         result = cursor.fetchone()
         if not result:
-            raise ValueError("Пользователь не найден")
-        stored_password = result[0]
-        if stored_password != password:
             raise ValueError("Неверные учетные данные")
-        # Генерация хэшированного ключа в качестве идентификационного ключа
-        user_key = hashlib.sha256(f"{username}{password}".encode()).hexdigest()
+        user_id, user_key = result
+        print(f"Пользователь ID {user_id} успешно аутентифицирован.")
         return {"user_key": user_key}
     except Exception as e:
-        raise e
+        print(f"Ошибка аутентификации пользователя: {e}")
+        raise ValueError("Не удалось аутентифицировать пользователя")
     finally:
         cursor.close()
 
@@ -278,9 +302,9 @@ class Exchanger_server(HTTP_handler):
             return self.send_bad_response("Invalid JSON")
 
         try:
-            if self.path == "/recipe":
-                response_data = new_recipe(data.get("name"), data.get("ingredients"), data.get("way_to_cook"))
-            elif self.path == "/user":
+            if self.path == "/recipe/new":
+                response_data = new_recipe(self.headers.get("X-USER-KEY") ,data.get("name"), data.get("ingredients"), data.get("way_to_cook"))
+            elif self.path == "/user/new":
                 response_data = new_user(data.get("user_name"), data.get("user_password"))
             else:
                 raise ValueError("Not found")
