@@ -5,7 +5,7 @@
 -- Dumped from database version 17.2 (Debian 17.2-1.pgdg120+1)
 -- Dumped by pg_dump version 17.2 (Debian 17.2-1.pgdg120+1)
 
--- Started on 2024-12-21 14:16:01 UTC
+-- Started on 2024-12-21 15:57:43 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -54,7 +54,7 @@ CREATE SEQUENCE public.favorite_id_seq
 ALTER SEQUENCE public.favorite_id_seq OWNER TO root;
 
 --
--- TOC entry 3421 (class 0 OID 0)
+-- TOC entry 3420 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: favorite_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
@@ -63,7 +63,7 @@ ALTER SEQUENCE public.favorite_id_seq OWNED BY public.favorite.id;
 
 
 --
--- TOC entry 228 (class 1259 OID 16458)
+-- TOC entry 219 (class 1259 OID 16389)
 -- Name: identifiers; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -77,7 +77,7 @@ CREATE TABLE public.identifiers (
 ALTER TABLE public.identifiers OWNER TO root;
 
 --
--- TOC entry 227 (class 1259 OID 16457)
+-- TOC entry 220 (class 1259 OID 16394)
 -- Name: identifiers_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -93,8 +93,8 @@ CREATE SEQUENCE public.identifiers_id_seq
 ALTER SEQUENCE public.identifiers_id_seq OWNER TO root;
 
 --
--- TOC entry 3422 (class 0 OID 0)
--- Dependencies: 227
+-- TOC entry 3421 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: identifiers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
@@ -102,7 +102,7 @@ ALTER SEQUENCE public.identifiers_id_seq OWNED BY public.identifiers.id;
 
 
 --
--- TOC entry 219 (class 1259 OID 16389)
+-- TOC entry 221 (class 1259 OID 16395)
 -- Name: ingredients; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -115,7 +115,7 @@ CREATE TABLE public.ingredients (
 ALTER TABLE public.ingredients OWNER TO root;
 
 --
--- TOC entry 220 (class 1259 OID 16394)
+-- TOC entry 222 (class 1259 OID 16400)
 -- Name: ingredients_for_recipes; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -131,7 +131,7 @@ CREATE TABLE public.ingredients_for_recipes (
 ALTER TABLE public.ingredients_for_recipes OWNER TO root;
 
 --
--- TOC entry 221 (class 1259 OID 16399)
+-- TOC entry 223 (class 1259 OID 16405)
 -- Name: ingredients_for_recipes_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -147,8 +147,8 @@ CREATE SEQUENCE public.ingredients_for_recipes_id_seq
 ALTER SEQUENCE public.ingredients_for_recipes_id_seq OWNER TO root;
 
 --
--- TOC entry 3423 (class 0 OID 0)
--- Dependencies: 221
+-- TOC entry 3422 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: ingredients_for_recipes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
@@ -156,7 +156,7 @@ ALTER SEQUENCE public.ingredients_for_recipes_id_seq OWNED BY public.ingredients
 
 
 --
--- TOC entry 222 (class 1259 OID 16400)
+-- TOC entry 224 (class 1259 OID 16406)
 -- Name: ingredients_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -172,8 +172,8 @@ CREATE SEQUENCE public.ingredients_id_seq
 ALTER SEQUENCE public.ingredients_id_seq OWNER TO root;
 
 --
--- TOC entry 3424 (class 0 OID 0)
--- Dependencies: 222
+-- TOC entry 3423 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: ingredients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
@@ -181,7 +181,7 @@ ALTER SEQUENCE public.ingredients_id_seq OWNED BY public.ingredients.id;
 
 
 --
--- TOC entry 223 (class 1259 OID 16401)
+-- TOC entry 225 (class 1259 OID 16407)
 -- Name: recipes; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -195,7 +195,7 @@ CREATE TABLE public.recipes (
 ALTER TABLE public.recipes OWNER TO root;
 
 --
--- TOC entry 224 (class 1259 OID 16406)
+-- TOC entry 226 (class 1259 OID 16412)
 -- Name: recipes_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -211,8 +211,8 @@ CREATE SEQUENCE public.recipes_id_seq
 ALTER SEQUENCE public.recipes_id_seq OWNER TO root;
 
 --
--- TOC entry 3425 (class 0 OID 0)
--- Dependencies: 224
+-- TOC entry 3424 (class 0 OID 0)
+-- Dependencies: 226
 -- Name: recipes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
@@ -220,7 +220,7 @@ ALTER SEQUENCE public.recipes_id_seq OWNED BY public.recipes.id;
 
 
 --
--- TOC entry 225 (class 1259 OID 16407)
+-- TOC entry 227 (class 1259 OID 16413)
 -- Name: users; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -235,7 +235,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO root;
 
 --
--- TOC entry 226 (class 1259 OID 16412)
+-- TOC entry 228 (class 1259 OID 16418)
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -251,8 +251,8 @@ CREATE SEQUENCE public.users_id_seq
 ALTER SEQUENCE public.users_id_seq OWNER TO root;
 
 --
--- TOC entry 3426 (class 0 OID 0)
--- Dependencies: 226
+-- TOC entry 3425 (class 0 OID 0)
+-- Dependencies: 228
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
@@ -260,7 +260,7 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- TOC entry 3235 (class 2604 OID 16413)
+-- TOC entry 3235 (class 2604 OID 16419)
 -- Name: favorite id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -268,7 +268,7 @@ ALTER TABLE ONLY public.favorite ALTER COLUMN id SET DEFAULT nextval('public.fav
 
 
 --
--- TOC entry 3240 (class 2604 OID 16461)
+-- TOC entry 3236 (class 2604 OID 16420)
 -- Name: identifiers id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -276,7 +276,7 @@ ALTER TABLE ONLY public.identifiers ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3236 (class 2604 OID 16414)
+-- TOC entry 3237 (class 2604 OID 16421)
 -- Name: ingredients id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -284,7 +284,7 @@ ALTER TABLE ONLY public.ingredients ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3237 (class 2604 OID 16415)
+-- TOC entry 3238 (class 2604 OID 16422)
 -- Name: ingredients_for_recipes id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -292,7 +292,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes ALTER COLUMN id SET DEFAULT next
 
 
 --
--- TOC entry 3238 (class 2604 OID 16416)
+-- TOC entry 3239 (class 2604 OID 16423)
 -- Name: recipes id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -300,7 +300,7 @@ ALTER TABLE ONLY public.recipes ALTER COLUMN id SET DEFAULT nextval('public.reci
 
 
 --
--- TOC entry 3239 (class 2604 OID 16417)
+-- TOC entry 3240 (class 2604 OID 16424)
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -308,16 +308,19 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
--- TOC entry 3404 (class 0 OID 16385)
+-- TOC entry 3403 (class 0 OID 16385)
 -- Dependencies: 217
 -- Data for Name: favorite; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (1, 1, 2);
+INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (2, 2, 2);
+INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (4, 2, 10);
 
 
 --
--- TOC entry 3415 (class 0 OID 16458)
--- Dependencies: 228
+-- TOC entry 3405 (class 0 OID 16389)
+-- Dependencies: 219
 -- Data for Name: identifiers; Type: TABLE DATA; Schema: public; Owner: root
 --
 
@@ -327,8 +330,8 @@ INSERT INTO public.identifiers (id, user_id, identifier) VALUES (3, 3, '9cc3f155
 
 
 --
--- TOC entry 3406 (class 0 OID 16389)
--- Dependencies: 219
+-- TOC entry 3407 (class 0 OID 16395)
+-- Dependencies: 221
 -- Data for Name: ingredients; Type: TABLE DATA; Schema: public; Owner: root
 --
 
@@ -337,54 +340,65 @@ INSERT INTO public.ingredients (id, name) VALUES (3, 'перец чёрный');
 INSERT INTO public.ingredients (id, name) VALUES (4, 'макароны');
 INSERT INTO public.ingredients (id, name) VALUES (5, 'говяжий фарш');
 INSERT INTO public.ingredients (id, name) VALUES (6, 'соль');
+INSERT INTO public.ingredients (id, name) VALUES (7, 'картофель');
+INSERT INTO public.ingredients (id, name) VALUES (8, 'томаты');
+INSERT INTO public.ingredients (id, name) VALUES (9, 'капуста');
+INSERT INTO public.ingredients (id, name) VALUES (10, 'свекла');
+INSERT INTO public.ingredients (id, name) VALUES (11, 'морковь');
+INSERT INTO public.ingredients (id, name) VALUES (12, 'свинина');
 
 
 --
--- TOC entry 3407 (class 0 OID 16394)
--- Dependencies: 220
+-- TOC entry 3408 (class 0 OID 16400)
+-- Dependencies: 222
 -- Data for Name: ingredients_for_recipes; Type: TABLE DATA; Schema: public; Owner: root
 --
 
 INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (1, 2, 2, '8', 'шт');
 INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (2, 3, 2, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (3, 4, 3, '1/2', 'кг');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (4, 5, 3, '250', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (5, 6, 3, '1', 'чайная ложка');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (6, 7, 10, '6', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (7, 8, 10, '2', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (8, 6, 10, '1', 'чайная ложка');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (9, 9, 10, '300', 'грамм');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (10, 10, 10, '1', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (11, 11, 10, '1', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (12, 2, 10, '1', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (13, 12, 10, '400', 'грамм');
 
 
 --
--- TOC entry 3410 (class 0 OID 16401)
--- Dependencies: 223
+-- TOC entry 3411 (class 0 OID 16407)
+-- Dependencies: 225
 -- Data for Name: recipes; Type: TABLE DATA; Schema: public; Owner: root
 --
 
 INSERT INTO public.recipes (id, name, way_to_cook) VALUES (2, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.');
-INSERT INTO public.recipes (id, name, way_to_cook) VALUES (3, 'Макароны по флотски', 'Зажарить фарш на подсолнечном масле. Отварить макароны в подсолённой воде, слить воду. Добавить макароны к фаршу, перемешать, выключить огонь.Приправы по вкусу');
+INSERT INTO public.recipes (id, name, way_to_cook) VALUES (10, 'Борщ', 'Зажарить зажарку, сварить мясо, добавить зажарку, добавить капусту, специи и оставить настаиваться');
 
 
 --
--- TOC entry 3412 (class 0 OID 16407)
--- Dependencies: 225
+-- TOC entry 3413 (class 0 OID 16413)
+-- Dependencies: 227
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: root
 --
 
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (1, 'root', 'goool', true);
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (2, 'bob_parser', '12345678', false);
-INSERT INTO public.users (id, name, passwd, is_admin) VALUES (3, 'eggman', '1234', false);
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (3, 'eggman', '1234', true);
 
 
 --
--- TOC entry 3427 (class 0 OID 0)
+-- TOC entry 3426 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: favorite_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.favorite_id_seq', 1, false);
+SELECT pg_catalog.setval('public.favorite_id_seq', 4, true);
 
 
 --
--- TOC entry 3428 (class 0 OID 0)
--- Dependencies: 227
+-- TOC entry 3427 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: identifiers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
@@ -392,35 +406,35 @@ SELECT pg_catalog.setval('public.identifiers_id_seq', 3, true);
 
 
 --
--- TOC entry 3429 (class 0 OID 0)
--- Dependencies: 221
+-- TOC entry 3428 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: ingredients_for_recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 5, true);
+SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 16, true);
+
+
+--
+-- TOC entry 3429 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: ingredients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.ingredients_id_seq', 12, true);
 
 
 --
 -- TOC entry 3430 (class 0 OID 0)
--- Dependencies: 222
--- Name: ingredients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+-- Dependencies: 226
+-- Name: recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_id_seq', 6, true);
+SELECT pg_catalog.setval('public.recipes_id_seq', 11, true);
 
 
 --
 -- TOC entry 3431 (class 0 OID 0)
--- Dependencies: 224
--- Name: recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
---
-
-SELECT pg_catalog.setval('public.recipes_id_seq', 8, true);
-
-
---
--- TOC entry 3432 (class 0 OID 0)
--- Dependencies: 226
+-- Dependencies: 228
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
@@ -428,7 +442,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 3, true);
 
 
 --
--- TOC entry 3242 (class 2606 OID 16419)
+-- TOC entry 3242 (class 2606 OID 16426)
 -- Name: favorite favorite_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -437,7 +451,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3252 (class 2606 OID 16465)
+-- TOC entry 3244 (class 2606 OID 16428)
 -- Name: identifiers identifiers_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -446,7 +460,7 @@ ALTER TABLE ONLY public.identifiers
 
 
 --
--- TOC entry 3246 (class 2606 OID 16421)
+-- TOC entry 3248 (class 2606 OID 16430)
 -- Name: ingredients_for_recipes ingredients_for_recipes_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -455,7 +469,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3244 (class 2606 OID 16423)
+-- TOC entry 3246 (class 2606 OID 16432)
 -- Name: ingredients ingredients_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -464,7 +478,7 @@ ALTER TABLE ONLY public.ingredients
 
 
 --
--- TOC entry 3248 (class 2606 OID 16425)
+-- TOC entry 3250 (class 2606 OID 16434)
 -- Name: recipes recipes_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -473,7 +487,7 @@ ALTER TABLE ONLY public.recipes
 
 
 --
--- TOC entry 3250 (class 2606 OID 16427)
+-- TOC entry 3252 (class 2606 OID 16436)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -482,7 +496,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3255 (class 2606 OID 16428)
+-- TOC entry 3256 (class 2606 OID 16437)
 -- Name: ingredients_for_recipes ingredients_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -491,7 +505,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3253 (class 2606 OID 16433)
+-- TOC entry 3253 (class 2606 OID 16442)
 -- Name: favorite recipe_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -500,7 +514,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3256 (class 2606 OID 16438)
+-- TOC entry 3257 (class 2606 OID 16447)
 -- Name: ingredients_for_recipes recipes_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -509,16 +523,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3257 (class 2606 OID 16443)
--- Name: recipes user_connecr; Type: FK CONSTRAINT; Schema: public; Owner: root
---
-
-ALTER TABLE ONLY public.recipes
-    ADD CONSTRAINT user_connecr FOREIGN KEY (id) REFERENCES public.users(id);
-
-
---
--- TOC entry 3254 (class 2606 OID 16448)
+-- TOC entry 3254 (class 2606 OID 16457)
 -- Name: favorite user_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -527,7 +532,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3258 (class 2606 OID 16466)
+-- TOC entry 3255 (class 2606 OID 16462)
 -- Name: identifiers users_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -535,7 +540,7 @@ ALTER TABLE ONLY public.identifiers
     ADD CONSTRAINT users_connect FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
--- Completed on 2024-12-21 14:16:01 UTC
+-- Completed on 2024-12-21 15:57:43 UTC
 
 --
 -- PostgreSQL database dump complete
