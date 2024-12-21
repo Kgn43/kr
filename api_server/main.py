@@ -6,7 +6,6 @@ import json
 import psycopg2
 from http.server import SimpleHTTPRequestHandler as HTTP_handler
 from json import loads, JSONDecodeError, dumps
-from server_functions import *
 import hashlib
 """
 
@@ -14,10 +13,9 @@ block of api functions
 
 """
 
-def create_user(admin_key, user_name, user_password):
+def new_user(user_name, user_password):
     """
     Создает нового пользователя в базе данных.
-    :param admin_key: Ключ администратора, для определения прав пользователя.
     :param user_name: Имя пользователя.
     :param user_password: Пароль пользователя.
     :return: Сообщение об успешном создании пользователя.
@@ -30,7 +28,7 @@ def create_user(admin_key, user_name, user_password):
         if cursor.fetchone():
             raise ValueError("Пользователь с таким именем уже существует")
         # Определяем, будет ли пользователь администратором
-        is_admin = hashlib.sha256(f"{admin_key}".encode()).hexdigest() == "cc43d29286e7173dda86d4acefcfca710fc823c550f8f9428b2cb9e1efc62a26"
+        is_admin = False
         # Открываем курсор для выполнения запроса
         cursor = db_connection.cursor()
         # SQL-запрос для добавления нового пользователя
@@ -53,11 +51,54 @@ def create_user(admin_key, user_name, user_password):
         """
         cursor.execute(query_identifier, (user_id, user_identifier))
         db_connection.commit()
-        return {"message": "Пользователь успешно создан"}
+        return {"user": user_identifier}
     except Exception as e:
         print(f"Ошибка при создании пользователя: {e}")
         db_connection.rollback()
         raise e
+    finally:
+        cursor.close()
+
+
+def new_admin(admin_key, user_name):
+    try:
+        cursor = db_connection.cursor()
+        # Проверяем существование пользователя
+        cursor.execute("SELECT user_id FROM identifiers WHERE identifier = %s;", (admin_key,))
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError("wrong x-key")
+        user_id = result[0]
+
+        # Проверяем, является ли отправитель администратором
+        query_requester = "SELECT is_admin FROM users WHERE id = %s;"
+        cursor.execute(query_requester, (user_id,))
+        requester_admin_status = cursor.fetchone()
+        if not requester_admin_status or not requester_admin_status[0]:
+            raise ValueError("Недостаточно прав")
+
+        # Найти целевого пользователя
+        query_target = "SELECT id FROM users WHERE name = %s"
+        cursor.execute(query_target, (user_name,))
+        target_user = cursor.fetchone()
+        if not target_user:
+            raise ValueError("Целевой пользователь не найден")
+        target_user_id = target_user[0]
+
+        # Обновить права целевого пользователя
+        query_promote = """
+        UPDATE users
+        SET is_admin = TRUE
+        WHERE id = %s
+        """
+        cursor.execute(query_promote, (target_user_id,))
+        db_connection.commit()
+
+        return {"message": f"Пользователь '{user_name}' успешно повышен до администратора"}
+    except Exception as e:
+        print(f"Ошибка при повышении прав: {e}")
+        db_connection.rollback()
+        raise ValueError("Не удалось повысить права пользователя")
     finally:
         cursor.close()
 
@@ -75,6 +116,7 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         if not user_id:
             raise ValueError("Пользователь не найден")
         user_id = user_id[0]
+        print(f"[DEBUG]: user_id = {user_id}")
         # Проверяем, является ли пользователь администратором
         admin_check_query = """
         SELECT is_admin FROM users WHERE id = %s;
@@ -83,6 +125,8 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         result = cursor.fetchone()
         if not result or not result[0]:
             raise ValueError("Недостаточно прав")
+        print(f"[DEBUG]: Проверка прав доступа успешно пройдена")
+        print(f"[DEBUG]: recipe_name = {recipe_name}, way_to_cook = {way_to_cook}")
         # SQL-запрос для вставки нового рецепта
         insert_recipe_query = """
         INSERT INTO recipes (name, way_to_cook)
@@ -91,18 +135,41 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         """
         cursor.execute(insert_recipe_query, (recipe_name, way_to_cook))
         recipe_id = cursor.fetchone()[0]
-        # Вставляем ингредиенты для рецепта
-        insert_ingredient_query = """
-        INSERT INTO ingredients_for_recipes (recipe_id, ingredient_id, quantity, unit)
-        VALUES (%s, %s, %s, %s);
-        """
+        print(f"[DEBUG]: adding recipe with name \"{recipe_name}\" and way to cook \"{way_to_cook}\"")
+        # Обработка ингредиентов
         for ingredient in ingredients:
-            cursor.execute(insert_ingredient_query, (
-                recipe_id,
-                ingredient['ingredient_id'],
-                ingredient['quantity'],
-                ingredient['unit']
-            ))
+            ingredient_name = ingredient.get("name", "").strip()
+            quantity = ingredient.get("quantity", "").strip()
+            unit = ingredient.get("unit", "").strip()
+
+            # Проверяем, что параметры не пустые
+            if not ingredient_name:
+                raise ValueError("Название ингредиента не может быть пустым")
+            if not quantity:
+                raise ValueError(f"Количество ингредиента '{ingredient_name}' не может быть пустым")
+            if not unit:
+                raise ValueError(f"Единица измерения ингредиента '{ingredient_name}' не может быть пустой")
+            print(f"[DEBUG]: ingredient_name = \"{ingredient_name}\"\nquantity = \"{quantity}\"\nunit = \"{unit}\"")
+            # Проверяем существование ингредиента в базе данных
+            select_ingredient_query = "SELECT id FROM ingredients WHERE name = %s"
+            cursor.execute(select_ingredient_query, (ingredient_name,))
+            ingredient_id = cursor.fetchone()
+            print(f"[DEBUG]: ingredient_id = \"{ingredient_id}\"")
+            # Если ингредиента нет, добавляем его
+            if not ingredient_id:
+                insert_ingredient_query = "INSERT INTO ingredients (name) VALUES (%s) RETURNING id"
+                cursor.execute(insert_ingredient_query, (ingredient_name,))
+                ingredient_id = cursor.fetchone()[0]
+            else:
+                ingredient_id = ingredient_id[0]
+
+            # Вставляем ингредиент для рецепта
+            insert_recipe_ingredient_query = """
+            INSERT INTO ingredients_for_recipes (recipe_id, ingredient_id, quantity, unit)
+            VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(insert_recipe_ingredient_query, (recipe_id, ingredient_id, quantity, unit))
+
         # Фиксируем изменения в базе данных
         db_connection.commit()
         # Закрываем курсор
@@ -115,6 +182,7 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         db_connection.rollback()
         print(f"Ошибка при создании рецепта: {e}")
         raise ValueError("Не удалось создать рецепт")
+
 
 
 def get_ingredients():
@@ -196,6 +264,65 @@ def get_recipe():
         print(f"Ошибка при получении списка рецептов: {e}")
         raise ValueError("Не удалось получить список рецептов")
 
+
+def get_recipe_by_filter(include_ingredients, exclude_ingredients):
+    """
+    Фильтрует рецепты по заданным критериям.
+    :param include_ingredients: Список id ингредиентов, которые должны содержаться в рецепте.
+    :param exclude_ingredients: Список id ингредиентов, которых не должно быть в рецепте.
+    :return: Список словарей с информацией о рецептах (id, name, way_to_cook, ingredients).
+    """
+    global db_connection
+    try:
+        cursor = db_connection.cursor()
+        # SQL-запрос для поиска рецептов, содержащих все нужные ингредиенты
+        include_condition = " AND ".join(
+            f"EXISTS (SELECT 1 FROM ingredients_for_recipes ir WHERE ir.recipe_id = r.id AND ir.ingredient_id = {ingr_id})"
+            for ingr_id in include_ingredients
+        ) if include_ingredients else "TRUE"
+        # SQL-запрос для исключения рецептов, содержащих нежелательные ингредиенты
+        exclude_condition = " AND ".join(
+            f"NOT EXISTS (SELECT 1 FROM ingredients_for_recipes ir WHERE ir.recipe_id = r.id AND ir.ingredient_id = {ingr_id})"
+            for ingr_id in exclude_ingredients
+        ) if exclude_ingredients else "TRUE"
+        # Основной запрос
+        query = f"""
+        SELECT r.id, r.name, r.way_to_cook
+        FROM recipes r
+        WHERE {include_condition} AND {exclude_condition};
+        """
+        cursor.execute(query)
+        recipes = cursor.fetchall()
+        result = []
+        for recipe in recipes:
+            recipe_id, name, way_to_cook = recipe
+            # Получаем ингредиенты для рецепта
+            ingredient_query = """
+            SELECT i.id, i.name, ir.quantity, ir.unit
+            FROM ingredients_for_recipes ir
+            JOIN ingredients i ON ir.ingredient_id = i.id
+            WHERE ir.recipe_id = %s;
+            """
+            cursor.execute(ingredient_query, (recipe_id,))
+            ingredients = cursor.fetchall()
+            ingredient_list = [
+                {"id": ingr[0], "name": ingr[1], "quantity": ingr[2], "unit": ingr[3]}
+                for ingr in ingredients
+            ]
+            result.append({
+                "id": recipe_id,
+                "name": name,
+                "way_to_cook": way_to_cook,
+                "ingredients": ingredient_list
+            })
+        return result
+    except Exception as e:
+        print(f"Ошибка при фильтрации рецептов: {e}")
+        raise ValueError("Не удалось выполнить фильтрацию рецептов")
+    finally:
+        cursor.close()
+
+
 def get_favourite(user_key):
     """
     Получает список любимых рецептов пользователя с их ингредиентами.
@@ -216,7 +343,7 @@ def get_favourite(user_key):
         # SQL-запрос для получения любимых рецептов
         select_favourites_query = """
         SELECT r.id, r.name, r.way_to_cook
-        FROM favourite f
+        FROM favorite f
         JOIN recipes r ON f.recipe_id = r.id
         WHERE f.user_id = %s;
         """
@@ -250,6 +377,7 @@ def get_favourite(user_key):
         # Возвращаем список любимых рецептов
         return favourite_list
     except Exception as e:
+        db_connection.rollback()
         print(f"Ошибка при получении любимых рецептов: {e}")
         raise ValueError("Не удалось получить любимые рецепты")
 
@@ -278,9 +406,143 @@ def get_user_indent(username, password):
         return {"user_key": user_key}
     except Exception as e:
         print(f"Ошибка аутентификации пользователя: {e}")
-        raise ValueError("Не удалось аутентифицировать пользователя")
+        raise ValueError("Неверный логин или пароль")
     finally:
         cursor.close()
+
+def delete_recipe(admin_key, recipe_id):
+    """
+    Удаляет рецепт по его ID.
+    :param admin_key: Идентификатор администратора.
+    :param recipe_id: ID рецепта, который нужно удалить.
+    :return: Сообщение об успешном удалении.
+    """
+    try:
+        cursor = db_connection.cursor()
+
+        # Проверяем, что пользователь является администратором
+        cursor.execute("SELECT user_id FROM identifiers WHERE identifier = %s;", (admin_key,))
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError("Неверный ключ администратора")
+        user_id = result[0]
+
+        # Проверяем права администратора
+        cursor.execute("SELECT is_admin FROM users WHERE id = %s;", (user_id,))
+        admin_status = cursor.fetchone()
+        if not admin_status or not admin_status[0]:
+            raise ValueError("Недостаточно прав")
+
+        # Удаляем ингредиенты, связанные с рецептом
+        delete_ingredients_query = "DELETE FROM ingredients_for_recipes WHERE recipe_id = %s;"
+        cursor.execute(delete_ingredients_query, (recipe_id,))
+
+        # Удаляем рецепты из избранного
+        delete_favorite_query = "DELETE FROM favorite WHERE recipe_id = %s;"
+        cursor.execute(delete_favorite_query, (recipe_id,))
+
+        # Удаляем сам рецепт
+        delete_recipe_query = "DELETE FROM recipes WHERE id = %s;"
+        cursor.execute(delete_recipe_query, (recipe_id,))
+
+        # Фиксируем изменения
+        db_connection.commit()
+
+        return {"message": f"Рецепт с ID {recipe_id} успешно удалён"}
+    except Exception as e:
+        print(f"Ошибка при удалении рецепта: {e}")
+        db_connection.rollback()
+        raise ValueError(f"Не удалось удалить рецепт. {e}")
+    finally:
+        cursor.close()
+
+
+def remove_favorite(user_key, recipe_id):
+    """
+    Удаляет рецепт из списка любимых рецептов пользователя.
+    :param user_key: Идентификатор пользователя.
+    :param recipe_id: ID рецепта, который нужно удалить из избранного.
+    :return: Сообщение об успешном удалении.
+    """
+    try:
+        cursor = db_connection.cursor()
+
+        # Проверяем существование пользователя
+        query_user = "SELECT user_id FROM identifiers WHERE identifier = %s;"
+        cursor.execute(query_user, (user_key,))
+        user_id = cursor.fetchone()
+        if not user_id:
+            raise ValueError("Пользователь не найден")
+        user_id = user_id[0]
+        print(f"[DEBUG]: user_id = {user_id}\nrecipe_id = {recipe_id}")
+        # Проверяем, существует ли рецепт в избранном у данного пользователя
+        check_favorite_query = "SELECT id FROM favorite WHERE user_id = %s AND recipe_id = %s;"
+        cursor.execute(check_favorite_query, (user_id, recipe_id))
+        favorite_entry = cursor.fetchone()
+        if not favorite_entry:
+            raise ValueError("Рецепт не найден в списке избранного")
+
+        # Удаляем рецепт из избранного
+        delete_favorite_query = "DELETE FROM favorite WHERE user_id = %s AND recipe_id = %s;"
+        cursor.execute(delete_favorite_query, (user_id, recipe_id))
+
+        # Фиксируем изменения
+        db_connection.commit()
+
+        return {"message": f"Рецепт с ID {recipe_id} успешно удалён из избранного"}
+    except Exception as e:
+        print(f"Ошибка при удалении рецепта из избранного: {e}")
+        db_connection.rollback()
+        raise ValueError(f"Не удалось удалить рецепт из избранного, {e}")
+    finally:
+        cursor.close()
+
+
+def add_recipe_to_favorites(user_identifier, recipe_id):
+    """
+    Добавляет рецепт в избранное для пользователя.
+    :param user_identifier: Идентификатор пользователя.
+    :param recipe_id: ID рецепта.
+    :return: Сообщение об успешном добавлении.
+    """
+    global db_connection
+    try:
+        cursor = db_connection.cursor()
+        # Проверяем существование пользователя по идентификатору
+        query_user = "SELECT user_id FROM identifiers WHERE identifier = %s;"
+        cursor.execute(query_user, (user_identifier,))
+        user = cursor.fetchone()
+        if not user:
+            raise ValueError("Пользователь с указанным идентификатором не найден.")
+        user_id = user[0]
+        # Проверяем существование рецепта
+        query_recipe = "SELECT id FROM recipes WHERE id = %s;"
+        cursor.execute(query_recipe, (recipe_id,))
+        recipe = cursor.fetchone()
+        if not recipe:
+            raise ValueError("Рецепт с указанным ID не найден.")
+        # Проверяем, не добавлен ли рецепт уже в избранное
+        query_favorite_exists = """
+        SELECT id FROM favorite WHERE user_id = %s AND recipe_id = %s;
+        """
+        cursor.execute(query_favorite_exists, (user_id, recipe_id))
+        if cursor.fetchone():
+            raise ValueError("Рецепт уже находится в избранном.")
+        # Добавляем рецепт в избранное
+        query_add_favorite = """
+        INSERT INTO favorite (user_id, recipe_id)
+        VALUES (%s, %s);
+        """
+        cursor.execute(query_add_favorite, (user_id, recipe_id))
+        db_connection.commit()
+        return {"message": "Рецепт успешно добавлен в избранное."}
+    except Exception as e:
+        db_connection.rollback()
+        print(f"Ошибка при добавлении рецепта в избранное: {e}")
+        raise e
+    finally:
+        cursor.close()
+
 
 
 """
@@ -302,10 +564,14 @@ class Exchanger_server(HTTP_handler):
             return self.send_bad_response("Invalid JSON")
 
         try:
-            if self.path == "/recipe/new":
-                response_data = new_recipe(self.headers.get("X-USER-KEY") ,data.get("name"), data.get("ingredients"), data.get("way_to_cook"))
-            elif self.path == "/user/new":
+            if self.path == "/admin/new/recipe":
+                response_data = new_recipe(self.headers.get("X-USER-KEY"), data.get("name"), data.get("ingredients"), data.get("way_to_cook"))
+            elif self.path == "/register":
                 response_data = new_user(data.get("user_name"), data.get("user_password"))
+            elif self.path == "/admin/new/superuser":
+                response_data = new_admin(self.headers.get("X-USER-KEY"), data.get("name"))
+            elif self.path == "/user/recipe/addToFavorite":
+                response_data = add_recipe_to_favorites(self.headers.get("X-USER-KEY"), data.get("recipe_id"))
             else:
                 raise ValueError("Not found")
         except Exception as e:
@@ -318,13 +584,27 @@ class Exchanger_server(HTTP_handler):
         try:
             if self.path == "/ingredients":
                 response_data = get_ingredients()
-            elif self.path == "/recipe":
+            elif self.path == "/recipe" or self.path == "/admin/recipe" or self.path == "/user/recipe":
                 response_data = get_recipe()
-            elif self.path == "/user/login":
+            elif self.path == "/login":
+                try:
+                    content_length = int(self.headers['Content-Length'])
+                    body = self.rfile.read(content_length).decode('utf-8')
+                    data = loads(body)
+                    print(f"Body: {data}")
+                except:
+                    return self.send_bad_response("Invalid JSON")
                 response_data = get_user_indent(data.get("user_name"), data.get("user_password"))
-            elif self.path == "/recipe/filter":
+            elif self.path == "/user/filter":
+                try:
+                    content_length = int(self.headers['Content-Length'])
+                    body = self.rfile.read(content_length).decode('utf-8')
+                    data = loads(body)
+                    print(f"Body: {data}")
+                except:
+                    return self.send_bad_response("Invalid JSON")
                 response_data = get_recipe_by_filter(data.get("good_ingredients"), data.get("bad_ingredients"))
-            elif self.path == "/favourite":
+            elif self.path == "/user/favorite":
                 response_data = get_favourite(self.headers.get("X-USER-KEY"))
             else:
                 raise ValueError("Not Found")
@@ -336,27 +616,26 @@ class Exchanger_server(HTTP_handler):
         print(f"Received DELETE request to {self.path}:")
         print(f"Headers: {self.headers}")
         try:
-            if self.path == "/order":
-                content_length = int(self.headers['Content-Length'])
-                body = self.rfile.read(content_length).decode('utf-8')
-                data = loads(body)
-                print(f"Body: {data}")
-                delete_recipe(
-                    self.headers.get("X-USER-KEY"),
-                    data.get("recipe_id")
-                )
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length).decode('utf-8')
+            data = loads(body)
+            print(f"Body: {data}")
+            if self.path == "/admin/del/recipe":
+                res = delete_recipe(self.headers.get("X-USER-KEY"), data.get("recipe_id"))
+            elif self.path == "/user/recipe/delFavorite":
+                res = remove_favorite(self.headers.get("X-USER-KEY"), data.get("recipe_id"))
             else:
                 raise ValueError("Not Found")
         except Exception as e:
             return self.send_bad_response(e)
-        self.send_good_response(b"")
+        self.send_good_response(res)
 
     def send_good_response(self, data):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         if data:
-            self.wfile.write(dumps(data).encode())
+            self.wfile.write(dumps(data, ensure_ascii=False).encode('utf-8')) #if receive smth wrong change this line
 
     def send_bad_response(self, error):
         self.send_response(400)

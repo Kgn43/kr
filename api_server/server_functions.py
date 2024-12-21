@@ -5,6 +5,17 @@ import socket
 import time
 
 
+def connect_to_db(ip: str, port: int):
+    global DB_socket
+    DB_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    DB_socket.connect((ip, port))
+    print(f"Connected to DB {ip}:{port}")
+
+
+def disconnect_from_db():
+    global DB_socket
+    DB_socket.close()
+
 
 def send_message(message: str) -> None:
     print(f"[DEBUG]: {message = }")

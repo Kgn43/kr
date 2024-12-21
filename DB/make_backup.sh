@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo docker exec exec -ti db_postgres /bin/bash
+sudo docker exec -ti db_postgres /bin/bash
 
 pg_dump --file "/home/backup.sql" --username "root" --no-password --format=p --encoding "UTF8" --inserts --column-inserts --verbose "root"
 

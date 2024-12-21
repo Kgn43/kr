@@ -5,7 +5,7 @@
 -- Dumped from database version 17.2 (Debian 17.2-1.pgdg120+1)
 -- Dumped by pg_dump version 17.2 (Debian 17.2-1.pgdg120+1)
 
--- Started on 2024-12-20 18:30:19 UTC
+-- Started on 2024-12-21 14:16:01 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,9 +29,9 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.favorite (
-                                 id integer NOT NULL,
-                                 user_id integer NOT NULL,
-                                 recipe_id integer NOT NULL
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    recipe_id integer NOT NULL
 );
 
 
@@ -68,9 +68,9 @@ ALTER SEQUENCE public.favorite_id_seq OWNED BY public.favorite.id;
 --
 
 CREATE TABLE public.identifiers (
-                                    id integer NOT NULL,
-                                    user_id integer NOT NULL,
-                                    identifier text NOT NULL
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    identifier text NOT NULL
 );
 
 
@@ -107,8 +107,8 @@ ALTER SEQUENCE public.identifiers_id_seq OWNED BY public.identifiers.id;
 --
 
 CREATE TABLE public.ingredients (
-                                    id integer NOT NULL,
-                                    name text NOT NULL
+    id integer NOT NULL,
+    name text NOT NULL
 );
 
 
@@ -120,11 +120,11 @@ ALTER TABLE public.ingredients OWNER TO root;
 --
 
 CREATE TABLE public.ingredients_for_recipes (
-                                                id integer NOT NULL,
-                                                ingredient_id integer,
-                                                recipe_id integer,
-                                                quanitty text NOT NULL,
-                                                unit text NOT NULL
+    id integer NOT NULL,
+    ingredient_id integer,
+    recipe_id integer,
+    quantity text NOT NULL,
+    unit text NOT NULL
 );
 
 
@@ -186,9 +186,9 @@ ALTER SEQUENCE public.ingredients_id_seq OWNED BY public.ingredients.id;
 --
 
 CREATE TABLE public.recipes (
-                                id integer NOT NULL,
-                                name text NOT NULL,
-                                way_to_cook text NOT NULL
+    id integer NOT NULL,
+    name text NOT NULL,
+    way_to_cook text NOT NULL
 );
 
 
@@ -225,10 +225,10 @@ ALTER SEQUENCE public.recipes_id_seq OWNED BY public.recipes.id;
 --
 
 CREATE TABLE public.users (
-                              id integer NOT NULL,
-                              name text NOT NULL,
-                              passwd text NOT NULL,
-                              is_admin boolean NOT NULL
+    id integer NOT NULL,
+    name text NOT NULL,
+    passwd text NOT NULL,
+    is_admin boolean NOT NULL
 );
 
 
@@ -321,6 +321,9 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: identifiers; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.identifiers (id, user_id, identifier) VALUES (1, 1, '05d53a23057a1aa7d634b1092ca3928e88ebde19ee50b85776fc49d8a5e59d48');
+INSERT INTO public.identifiers (id, user_id, identifier) VALUES (2, 2, 'd6de11e4f2fc571c47d37cb0b86e5085117ac680f64cce18a8ed7d88ac3991b1');
+INSERT INTO public.identifiers (id, user_id, identifier) VALUES (3, 3, '9cc3f155195176659d244ae9bad92ca8152b52cfea1dc7ce72b61eb43691143f');
 
 
 --
@@ -329,6 +332,11 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: ingredients; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.ingredients (id, name) VALUES (2, 'лук');
+INSERT INTO public.ingredients (id, name) VALUES (3, 'перец чёрный');
+INSERT INTO public.ingredients (id, name) VALUES (4, 'макароны');
+INSERT INTO public.ingredients (id, name) VALUES (5, 'говяжий фарш');
+INSERT INTO public.ingredients (id, name) VALUES (6, 'соль');
 
 
 --
@@ -337,6 +345,11 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: ingredients_for_recipes; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (1, 2, 2, '8', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (2, 3, 2, '100', 'грамм');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (3, 4, 3, '1/2', 'кг');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (4, 5, 3, '250', 'грамм');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (5, 6, 3, '1', 'чайная ложка');
 
 
 --
@@ -345,6 +358,8 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: recipes; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.recipes (id, name, way_to_cook) VALUES (2, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.');
+INSERT INTO public.recipes (id, name, way_to_cook) VALUES (3, 'Макароны по флотски', 'Зажарить фарш на подсолнечном масле. Отварить макароны в подсолённой воде, слить воду. Добавить макароны к фаршу, перемешать, выключить огонь.Приправы по вкусу');
 
 
 --
@@ -353,6 +368,9 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: root
 --
 
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (1, 'root', 'goool', true);
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (2, 'bob_parser', '12345678', false);
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (3, 'eggman', '1234', false);
 
 
 --
@@ -370,7 +388,7 @@ SELECT pg_catalog.setval('public.favorite_id_seq', 1, false);
 -- Name: identifiers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.identifiers_id_seq', 1, false);
+SELECT pg_catalog.setval('public.identifiers_id_seq', 3, true);
 
 
 --
@@ -379,7 +397,7 @@ SELECT pg_catalog.setval('public.identifiers_id_seq', 1, false);
 -- Name: ingredients_for_recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 1, false);
+SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 5, true);
 
 
 --
@@ -388,7 +406,7 @@ SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 1, false);
 -- Name: ingredients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_id_seq', 1, false);
+SELECT pg_catalog.setval('public.ingredients_id_seq', 6, true);
 
 
 --
@@ -397,7 +415,7 @@ SELECT pg_catalog.setval('public.ingredients_id_seq', 1, false);
 -- Name: recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.recipes_id_seq', 1, false);
+SELECT pg_catalog.setval('public.recipes_id_seq', 8, true);
 
 
 --
@@ -406,7 +424,7 @@ SELECT pg_catalog.setval('public.recipes_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 3, true);
 
 
 --
@@ -517,7 +535,7 @@ ALTER TABLE ONLY public.identifiers
     ADD CONSTRAINT users_connect FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
--- Completed on 2024-12-20 18:30:19 UTC
+-- Completed on 2024-12-21 14:16:01 UTC
 
 --
 -- PostgreSQL database dump complete
