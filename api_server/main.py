@@ -103,12 +103,13 @@ def new_admin(admin_key, user_name):
         cursor.close()
 
 
-def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
+def new_recipe(user_key, recipe_name, description, ingredients, way_to_cook):
     global db_connection
-    if not recipe_name or not ingredients or not way_to_cook:
-        raise ValueError("Название рецепта, способ приготовления и список ингредиентов не могут быть пустыми")
+    if not recipe_name or not description or not ingredients or not way_to_cook:
+        raise ValueError("Название рецепта, описание, способ приготовления и список ингредиентов не могут быть пустыми")
     try:
         cursor = db_connection.cursor()
+
         # Найти пользователя по ключу
         query_user = "SELECT user_id FROM identifiers WHERE identifier = %s"
         cursor.execute(query_user, (user_key,))
@@ -116,7 +117,9 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         if not user_id:
             raise ValueError("Пользователь не найден")
         user_id = user_id[0]
+
         print(f"[DEBUG]: user_id = {user_id}")
+
         # Проверяем, является ли пользователь администратором
         admin_check_query = """
         SELECT is_admin FROM users WHERE id = %s;
@@ -125,17 +128,21 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
         result = cursor.fetchone()
         if not result or not result[0]:
             raise ValueError("Недостаточно прав")
+
         print(f"[DEBUG]: Проверка прав доступа успешно пройдена")
-        print(f"[DEBUG]: recipe_name = {recipe_name}, way_to_cook = {way_to_cook}")
+        print(f"[DEBUG]: recipe_name = {recipe_name}, description = {description}, way_to_cook = {way_to_cook}")
+
         # SQL-запрос для вставки нового рецепта
         insert_recipe_query = """
-        INSERT INTO recipes (name, way_to_cook)
-        VALUES (%s, %s)
+        INSERT INTO recipes (name, description, way_to_cook)
+        VALUES (%s, %s, %s)
         RETURNING id;
         """
-        cursor.execute(insert_recipe_query, (recipe_name, way_to_cook))
+        cursor.execute(insert_recipe_query, (recipe_name, description, way_to_cook))
         recipe_id = cursor.fetchone()[0]
-        print(f"[DEBUG]: adding recipe with name \"{recipe_name}\" and way to cook \"{way_to_cook}\"")
+
+        print(f"[DEBUG]: adding recipe with name \"{recipe_name}\", description \"{description}\" and way to cook \"{way_to_cook}\"")
+
         # Обработка ингредиентов
         for ingredient in ingredients:
             ingredient_name = ingredient.get("name", "").strip()
@@ -149,12 +156,16 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
                 raise ValueError(f"Количество ингредиента '{ingredient_name}' не может быть пустым")
             if not unit:
                 raise ValueError(f"Единица измерения ингредиента '{ingredient_name}' не может быть пустой")
+
             print(f"[DEBUG]: ingredient_name = \"{ingredient_name}\"\nquantity = \"{quantity}\"\nunit = \"{unit}\"")
+
             # Проверяем существование ингредиента в базе данных
             select_ingredient_query = "SELECT id FROM ingredients WHERE name = %s"
             cursor.execute(select_ingredient_query, (ingredient_name,))
             ingredient_id = cursor.fetchone()
+
             print(f"[DEBUG]: ingredient_id = \"{ingredient_id}\"")
+
             # Если ингредиента нет, добавляем его
             if not ingredient_id:
                 insert_ingredient_query = "INSERT INTO ingredients (name) VALUES (%s) RETURNING id"
@@ -170,18 +181,21 @@ def new_recipe(user_key, recipe_name, ingredients, way_to_cook):
             """
             cursor.execute(insert_recipe_ingredient_query, (recipe_id, ingredient_id, quantity, unit))
 
-        # Фиксируем изменения в базе данных
+        # Фиксируем изменения
         db_connection.commit()
-        # Закрываем курсор
-        cursor.close()
-        print(f"Рецепт создан: {recipe_name} (ID: {recipe_id})")
-        # Возвращаем информацию о созданном рецепте
+
+        print(f"[DEBUG]: Recipe with ID {recipe_id} successfully added")
+
         return {"id": recipe_id, "name": recipe_name}
+
     except Exception as e:
-        # В случае ошибки откатываем изменения
+        print(f"Ошибка при добавлении рецепта: {e}")
         db_connection.rollback()
-        print(f"Ошибка при создании рецепта: {e}")
-        raise ValueError("Не удалось создать рецепт")
+        raise e
+
+    finally:
+        cursor.close()
+
 
 
 
@@ -218,7 +232,7 @@ def get_ingredients():
 def get_recipe():
     """
     Получает список всех рецептов из базы данных.
-    :return: Список словарей с информацией о рецептах (id, name, way_to_cook, ingredients).
+    :return: Список словарей с информацией о рецептах (id, name, description).
     """
     global db_connection
     try:
@@ -226,35 +240,15 @@ def get_recipe():
         cursor = db_connection.cursor()
         # SQL-запрос для получения рецептов
         select_recipes_query = """
-        SELECT id, name, way_to_cook FROM recipes;
+        SELECT id, name, description FROM recipes;
         """
         cursor.execute(select_recipes_query)
         recipes = cursor.fetchall()
-        # Создаем список рецептов с ингредиентами
-        recipe_list = []
-        for recipe in recipes:
-            recipe_id, name, way_to_cook = recipe
-            # Получаем ингредиенты для рецепта
-            select_ingredients_query = """
-            SELECT i.id, i.name, ir.quantity, ir.unit
-            FROM ingredients_for_recipes ir
-            JOIN ingredients i ON ir.ingredient_id = i.id
-            WHERE ir.recipe_id = %s;
-            """
-            cursor.execute(select_ingredients_query, (recipe_id,))
-            ingredients = cursor.fetchall()
-            # Преобразуем ингредиенты в список словарей
-            ingredient_list = [
-                {"id": ingredient[0], "name": ingredient[1], "quantity": ingredient[2], "unit": ingredient[3]}
-                for ingredient in ingredients
-            ]
-            # Добавляем рецепт в общий список
-            recipe_list.append({
-                "id": recipe_id,
-                "name": name,
-                "way_to_cook": way_to_cook,
-                "ingredients": ingredient_list
-            })
+        # Создаём список рецептов с нужной информацией
+        recipe_list = [
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            for recipe in recipes
+        ]
         # Закрываем курсор
         cursor.close()
         print(f"Получено {len(recipe_list)} рецептов из базы данных.")
@@ -265,56 +259,41 @@ def get_recipe():
         raise ValueError("Не удалось получить список рецептов")
 
 
+
+
 def get_recipe_by_filter(include_ingredients, exclude_ingredients):
     """
     Фильтрует рецепты по заданным критериям.
     :param include_ingredients: Список id ингредиентов, которые должны содержаться в рецепте.
     :param exclude_ingredients: Список id ингредиентов, которых не должно быть в рецепте.
-    :return: Список словарей с информацией о рецептах (id, name, way_to_cook, ingredients).
+    :return: Список словарей с информацией о рецептах (id, name, description).
     """
     global db_connection
     try:
         cursor = db_connection.cursor()
-        # SQL-запрос для поиска рецептов, содержащих все нужные ингредиенты
+        # Условие для фильтрации рецептов по включаемым ингредиентам
         include_condition = " AND ".join(
             f"EXISTS (SELECT 1 FROM ingredients_for_recipes ir WHERE ir.recipe_id = r.id AND ir.ingredient_id = {ingr_id})"
             for ingr_id in include_ingredients
         ) if include_ingredients else "TRUE"
-        # SQL-запрос для исключения рецептов, содержащих нежелательные ингредиенты
+        # Условие для фильтрации рецептов по исключаемым ингредиентам
         exclude_condition = " AND ".join(
             f"NOT EXISTS (SELECT 1 FROM ingredients_for_recipes ir WHERE ir.recipe_id = r.id AND ir.ingredient_id = {ingr_id})"
             for ingr_id in exclude_ingredients
         ) if exclude_ingredients else "TRUE"
         # Основной запрос
         query = f"""
-        SELECT r.id, r.name, r.way_to_cook
+        SELECT r.id, r.name, r.description
         FROM recipes r
         WHERE {include_condition} AND {exclude_condition};
         """
         cursor.execute(query)
         recipes = cursor.fetchall()
-        result = []
-        for recipe in recipes:
-            recipe_id, name, way_to_cook = recipe
-            # Получаем ингредиенты для рецепта
-            ingredient_query = """
-            SELECT i.id, i.name, ir.quantity, ir.unit
-            FROM ingredients_for_recipes ir
-            JOIN ingredients i ON ir.ingredient_id = i.id
-            WHERE ir.recipe_id = %s;
-            """
-            cursor.execute(ingredient_query, (recipe_id,))
-            ingredients = cursor.fetchall()
-            ingredient_list = [
-                {"id": ingr[0], "name": ingr[1], "quantity": ingr[2], "unit": ingr[3]}
-                for ingr in ingredients
-            ]
-            result.append({
-                "id": recipe_id,
-                "name": name,
-                "way_to_cook": way_to_cook,
-                "ingredients": ingredient_list
-            })
+        # Создаём список рецептов с нужной информацией
+        result = [
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            for recipe in recipes
+        ]
         return result
     except Exception as e:
         print(f"Ошибка при фильтрации рецептов: {e}")
@@ -323,11 +302,12 @@ def get_recipe_by_filter(include_ingredients, exclude_ingredients):
         cursor.close()
 
 
+
 def get_favourite(user_key):
     """
-    Получает список любимых рецептов пользователя с их ингредиентами.
+    Получает список любимых рецептов пользователя.
     :param user_key: Идентификатор пользователя.
-    :return: Список словарей с информацией о любимых рецептах и их ингредиентах.
+    :return: Список словарей с информацией о любимых рецептах (id, name, description).
     """
     global db_connection
     try:
@@ -342,44 +322,27 @@ def get_favourite(user_key):
         user_id = user_id[0]
         # SQL-запрос для получения любимых рецептов
         select_favourites_query = """
-        SELECT r.id, r.name, r.way_to_cook
+        SELECT r.id, r.name, r.description
         FROM favorite f
         JOIN recipes r ON f.recipe_id = r.id
         WHERE f.user_id = %s;
         """
         cursor.execute(select_favourites_query, (user_id,))
         favourites = cursor.fetchall()
-        favourite_list = []
-        for favourite in favourites:
-            recipe_id, name, way_to_cook = favourite
-            # Получаем ингредиенты для каждого любимого рецепта
-            select_ingredients_query = """
-            SELECT i.id, i.name, ir.quantity, ir.unit
-            FROM ingredients_for_recipes ir
-            JOIN ingredients i ON ir.ingredient_id = i.id
-            WHERE ir.recipe_id = %s;
-            """
-            cursor.execute(select_ingredients_query, (recipe_id,))
-            ingredients = cursor.fetchall()
-            ingredient_list = [
-                {"id": ingredient[0], "name": ingredient[1], "quantity": ingredient[2], "unit": ingredient[3]}
-                for ingredient in ingredients
-            ]
-            favourite_list.append({
-                "id": recipe_id,
-                "name": name,
-                "way_to_cook": way_to_cook,
-                "ingredients": ingredient_list
-            })
-        # Закрываем курсор
-        cursor.close()
+        # Формируем список любимых рецептов
+        favourite_list = [
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            for recipe in favourites
+        ]
         print(f"Получено {len(favourite_list)} любимых рецептов пользователя с ID {user_id}.")
-        # Возвращаем список любимых рецептов
         return favourite_list
     except Exception as e:
         db_connection.rollback()
         print(f"Ошибка при получении любимых рецептов: {e}")
         raise ValueError("Не удалось получить любимые рецепты")
+    finally:
+        cursor.close()
+
 
 
 def get_user_indent(username, password):
@@ -543,6 +506,56 @@ def add_recipe_to_favorites(user_identifier, recipe_id):
     finally:
         cursor.close()
 
+def get_recipe_details(recipe_id):
+    """
+    Получает информацию о рецепте по его ID.
+    :param recipe_id: ID рецепта.
+    :return: Словарь с информацией о рецепте (name, description, ingredients, way_to_cook).
+    """
+    global db_connection
+    try:
+        # Открываем курсор для выполнения запроса
+        cursor = db_connection.cursor()
+        # SQL-запрос для получения информации о рецепте
+        recipe_query = """
+        SELECT name, description, way_to_cook
+        FROM recipes
+        WHERE id = %s;
+        """
+        cursor.execute(recipe_query, (recipe_id,))
+        recipe = cursor.fetchone()
+        if not recipe:
+            raise ValueError("Рецепт с указанным ID не найден")
+
+        name, description, way_to_cook = recipe
+        # SQL-запрос для получения ингредиентов рецепта
+        ingredients_query = """
+        SELECT i.id, i.name, ir.quantity, ir.unit
+        FROM ingredients_for_recipes ir
+        JOIN ingredients i ON ir.ingredient_id = i.id
+        WHERE ir.recipe_id = %s;
+        """
+        cursor.execute(ingredients_query, (recipe_id,))
+        ingredients = cursor.fetchall()
+        # Формируем список ингредиентов
+        ingredient_list = [
+            {"id": ingr[0], "name": ingr[1], "quantity": ingr[2], "unit": ingr[3]}
+            for ingr in ingredients
+        ]
+        # Формируем результат
+        recipe_details = {
+            "name": name,
+            "description": description,
+            "ingredients": ingredient_list,
+            "way_to_cook": way_to_cook
+        }
+        print(f"Получены данные о рецепте с ID {recipe_id}.")
+        return recipe_details
+    except Exception as e:
+        print(f"Ошибка при получении данных о рецепте: {e}")
+        raise ValueError("Не удалось получить данные о рецепте")
+    finally:
+        cursor.close()
 
 
 """
@@ -565,13 +578,19 @@ class Exchanger_server(HTTP_handler):
 
         try:
             if self.path == "/admin/new/recipe":
-                response_data = new_recipe(self.headers.get("X-USER-KEY"), data.get("name"), data.get("ingredients"), data.get("way_to_cook"))
+                response_data = new_recipe(self.headers.get("X-USER-KEY"), data.get("name"), data.get("description") , data.get("ingredients"), data.get("way_to_cook"))
             elif self.path == "/register":
                 response_data = new_user(data.get("user_name"), data.get("user_password"))
             elif self.path == "/admin/new/superuser":
                 response_data = new_admin(self.headers.get("X-USER-KEY"), data.get("name"))
             elif self.path == "/user/recipe/addToFavorite":
                 response_data = add_recipe_to_favorites(self.headers.get("X-USER-KEY"), data.get("recipe_id"))
+            elif self.path == "/login":
+                response_data = get_user_indent(data.get("user_name"), data.get("user_password"))
+            elif self.path == "/user/filter":
+                response_data = get_recipe_by_filter(data.get("good_ingredients"), data.get("bad_ingredients"))
+            elif self.path == "/recipe":
+                response_data = get_recipe_details(data.get("recipe_id"))
             else:
                 raise ValueError("Not found")
         except Exception as e:
@@ -586,24 +605,6 @@ class Exchanger_server(HTTP_handler):
                 response_data = get_ingredients()
             elif self.path == "/recipe" or self.path == "/admin/recipe" or self.path == "/user/recipe":
                 response_data = get_recipe()
-            elif self.path == "/login":
-                try:
-                    content_length = int(self.headers['Content-Length'])
-                    body = self.rfile.read(content_length).decode('utf-8')
-                    data = loads(body)
-                    print(f"Body: {data}")
-                except:
-                    return self.send_bad_response("Invalid JSON")
-                response_data = get_user_indent(data.get("user_name"), data.get("user_password"))
-            elif self.path == "/user/filter":
-                try:
-                    content_length = int(self.headers['Content-Length'])
-                    body = self.rfile.read(content_length).decode('utf-8')
-                    data = loads(body)
-                    print(f"Body: {data}")
-                except:
-                    return self.send_bad_response("Invalid JSON")
-                response_data = get_recipe_by_filter(data.get("good_ingredients"), data.get("bad_ingredients"))
             elif self.path == "/user/favorite":
                 response_data = get_favourite(self.headers.get("X-USER-KEY"))
             else:
