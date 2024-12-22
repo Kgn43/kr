@@ -33,3 +33,6 @@ curl http://127.0.0.1:5252/user/favorite -X GET -H 'X-USER-KEY: 05d53a23057a1aa7
 11) add recipe to favorite
 curl http://127.0.0.1:5252/user/recipe/addToFavorite -X POST -H 'X-USER-KEY: 05d53a23057a1aa7d634b1092ca3928e88ebde19ee50b85776fc49d8a5e59d48' -d '{"recipe_id": "3"}'
 curl http://127.0.0.1:5252/user/recipe/addToFavorite -X POST -H 'X-USER-KEY: d6de11e4f2fc571c47d37cb0b86e5085117ac680f64cce18a8ed7d88ac3991b1' -d '{"recipe_id": "10"}'
+
+12) get one recipe
+curl http://127.0.0.1:5252/recipe -X POST -d '{"recipe_id": 20}'
