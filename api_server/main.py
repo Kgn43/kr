@@ -719,7 +719,7 @@ class Exchanger_server(HTTP_handler):
             elif self.path == "/status":
                 response_data = get_status(self.headers.get("X-USER-KEY"))
             elif self.path == "/user/favorite/check":
-                response_data = get_favourite(self.headers.get("X-USER-KEY"), self.headers.get("id"))
+                response_data = is_recipe_in_favourites(self.headers.get("X-USER-KEY"), self.headers.get("id"))
             else:
                 raise ValueError("Not Found")
         except Exception as ex:
