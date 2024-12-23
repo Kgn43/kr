@@ -544,7 +544,7 @@ def get_recipe_details(recipe_id):
         ]
         # Формируем результат
         recipe_details = {
-            "recipe_id": recipe_id,
+            "id": recipe_id,
             "name": name,
             "description": description,
             "ingredients": ingredient_list,
