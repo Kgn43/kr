@@ -558,6 +558,37 @@ def get_recipe_details(recipe_id):
     finally:
         cursor.close()
 
+def get_user_status(user_key):
+    """
+    Проверяет статус пользователя (администратор или нет).
+    :param user_key: Идентификатор пользователя из заголовка X-USER-KEY.
+    :return: Словарь с информацией о статусе пользователя {"is_admin": bool}.
+    """
+    global db_connection
+    try:
+        # Открываем курсор для выполнения запроса
+        cursor = db_connection.cursor()
+        # SQL-запрос для получения статуса пользователя
+        query = """
+        SELECT u.is_admin
+        FROM identifiers i
+        JOIN users u ON i.user_id = u.id
+        WHERE i.identifier = %s;
+        """
+        cursor.execute(query, (user_key,))
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError("Пользователь с указанным ключом не найден")
+
+        is_admin = result[0]  # Получаем статус администратора
+        print(f"Статус пользователя: {'администратор' if is_admin else 'обычный пользователь'}")
+        return {"is_admin": is_admin}
+    except Exception as e:
+        print(f"Ошибка при проверке статуса пользователя: {e}")
+        raise ValueError("Не удалось проверить статус пользователя")
+    finally:
+        cursor.close()
+
 
 """
 
@@ -608,6 +639,8 @@ class Exchanger_server(HTTP_handler):
                 response_data = get_recipe()
             elif self.path == "/user/favorite":
                 response_data = get_favourite(self.headers.get("X-USER-KEY"))
+            elif self.path == "/status":
+                response_data = get_status(self.headers.get("X-USER-KEY"))
             else:
                 raise ValueError("Not Found")
         except Exception as ex:
