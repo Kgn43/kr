@@ -5,7 +5,7 @@
 -- Dumped from database version 17.2 (Debian 17.2-1.pgdg120+1)
 -- Dumped by pg_dump version 17.2 (Debian 17.2-1.pgdg120+1)
 
--- Started on 2024-12-22 14:44:11 UTC
+-- Started on 2024-12-23 16:44:06 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -189,14 +189,15 @@ CREATE TABLE public.recipes (
     id integer NOT NULL,
     name text NOT NULL,
     way_to_cook text NOT NULL,
-    description text DEFAULT 'описание'::text NOT NULL
+    description text DEFAULT 'описание'::text NOT NULL,
+    image text
 );
 
 
 ALTER TABLE public.recipes OWNER TO root;
 
 --
--- TOC entry 226 (class 1259 OID 16412)
+-- TOC entry 226 (class 1259 OID 16413)
 -- Name: recipes_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -221,7 +222,7 @@ ALTER SEQUENCE public.recipes_id_seq OWNED BY public.recipes.id;
 
 
 --
--- TOC entry 227 (class 1259 OID 16413)
+-- TOC entry 227 (class 1259 OID 16414)
 -- Name: users; Type: TABLE; Schema: public; Owner: root
 --
 
@@ -236,7 +237,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO root;
 
 --
--- TOC entry 228 (class 1259 OID 16418)
+-- TOC entry 228 (class 1259 OID 16419)
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: root
 --
 
@@ -261,7 +262,7 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- TOC entry 3235 (class 2604 OID 16419)
+-- TOC entry 3235 (class 2604 OID 16420)
 -- Name: favorite id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -269,7 +270,7 @@ ALTER TABLE ONLY public.favorite ALTER COLUMN id SET DEFAULT nextval('public.fav
 
 
 --
--- TOC entry 3236 (class 2604 OID 16420)
+-- TOC entry 3236 (class 2604 OID 16421)
 -- Name: identifiers id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -277,7 +278,7 @@ ALTER TABLE ONLY public.identifiers ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3237 (class 2604 OID 16421)
+-- TOC entry 3237 (class 2604 OID 16422)
 -- Name: ingredients id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -285,7 +286,7 @@ ALTER TABLE ONLY public.ingredients ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3238 (class 2604 OID 16422)
+-- TOC entry 3238 (class 2604 OID 16423)
 -- Name: ingredients_for_recipes id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -293,7 +294,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes ALTER COLUMN id SET DEFAULT next
 
 
 --
--- TOC entry 3239 (class 2604 OID 16423)
+-- TOC entry 3239 (class 2604 OID 16424)
 -- Name: recipes id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -301,7 +302,7 @@ ALTER TABLE ONLY public.recipes ALTER COLUMN id SET DEFAULT nextval('public.reci
 
 
 --
--- TOC entry 3241 (class 2604 OID 16424)
+-- TOC entry 3241 (class 2604 OID 16425)
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: root
 --
 
@@ -317,6 +318,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (1, 1, 2);
 INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (2, 2, 2);
 INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (4, 2, 10);
+INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (19, 5, 22);
 
 
 --
@@ -332,6 +334,7 @@ INSERT INTO public.identifiers (id, user_id, identifier) VALUES (4, 4, '96cae35c
 INSERT INTO public.identifiers (id, user_id, identifier) VALUES (5, 5, '3cc849279ba298b587a34cabaeffc5ecb3a044bbf97c516fab7ede9d1af77cfa');
 INSERT INTO public.identifiers (id, user_id, identifier) VALUES (6, 6, 'a0ec06301bf1814970a70f89d1d373afdff9a36d1ba6675fc02f8a975f4efaeb');
 INSERT INTO public.identifiers (id, user_id, identifier) VALUES (7, 7, '5fd924625f6ab16a19cc9807c7c506ae1813490e4ba675f843d5a10e0baacdb8');
+INSERT INTO public.identifiers (id, user_id, identifier) VALUES (8, 8, 'e7f4da38fcf33ffebc74ed681291a74be0afedca2a104b8e5b798936c3fab986');
 
 
 --
@@ -351,6 +354,13 @@ INSERT INTO public.ingredients (id, name) VALUES (9, 'капуста');
 INSERT INTO public.ingredients (id, name) VALUES (10, 'свекла');
 INSERT INTO public.ingredients (id, name) VALUES (11, 'морковь');
 INSERT INTO public.ingredients (id, name) VALUES (12, 'свинина');
+INSERT INTO public.ingredients (id, name) VALUES (13, 'qwe');
+INSERT INTO public.ingredients (id, name) VALUES (14, '123123');
+INSERT INTO public.ingredients (id, name) VALUES (15, 'укроп');
+INSERT INTO public.ingredients (id, name) VALUES (16, 'кошка');
+INSERT INTO public.ingredients (id, name) VALUES (17, 'вода');
+INSERT INTO public.ingredients (id, name) VALUES (18, 'дрова');
+INSERT INTO public.ingredients (id, name) VALUES (19, '1');
 
 
 --
@@ -376,18 +386,14 @@ INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quanti
 INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (21, 3, 13, '100', 'грамм');
 INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (22, 2, 14, '8', 'шт');
 INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (23, 3, 14, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (24, 2, 15, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (25, 3, 15, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (26, 2, 16, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (27, 3, 16, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (28, 2, 17, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (29, 3, 17, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (30, 2, 18, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (31, 3, 18, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (32, 2, 19, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (33, 3, 19, '100', 'грамм');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (34, 2, 20, '8', 'шт');
-INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (35, 3, 20, '100', 'грамм');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (36, 13, 21, '123', 'qwe');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (37, 14, 21, '123', '123');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (38, 15, 22, '1', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (39, 16, 22, '1', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (40, 7, 22, '25', 'шт');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (41, 17, 22, '1', 'ведро');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (42, 18, 22, '1', 'охапка');
+INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quantity, unit) VALUES (43, 19, 23, '1', '1');
 
 
 --
@@ -396,21 +402,24 @@ INSERT INTO public.ingredients_for_recipes (id, ingredient_id, recipe_id, quanti
 -- Data for Name: recipes; Type: TABLE DATA; Schema: public; Owner: root
 --
 
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (2, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (10, 'Борщ', 'Зажарить зажарку, сварить мясо, добавить зажарку, добавить капусту, специи и оставить настаиваться', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (12, 'Макароны по флотски', 'Зажарить фарш на подсолнечном масле. Отварить макароны в подсолённой воде, слить воду. Добавить макароны к фаршу, перемешать, выключить огонь.Приправы по вкусу', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (13, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (14, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (15, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (16, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (17, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (18, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (19, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
-INSERT INTO public.recipes (id, name, way_to_cook, description) VALUES (20, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание');
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (2, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (10, 'Борщ', 'Зажарить зажарку, сварить мясо, добавить зажарку, добавить капусту, специи и оставить настаиваться', 'описание', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (12, 'Макароны по флотски', 'Зажарить фарш на подсолнечном масле. Отварить макароны в подсолённой воде, слить воду. Добавить макароны к фаршу, перемешать, выключить огонь.Приправы по вкусу', 'описание', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (13, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (14, 'Луковый угар', 'зажаривать лук в течении 15 минут на медленном огне, добавить перец, перемешать.', 'описание', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (21, 'qwe', '123123123
+123
+123
+12
+312
+31
+23', 'wqe', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (22, 'абоба', 'берём сначала укропу...', 'гойда', NULL);
+INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (23, '123', '123', '123', NULL);
 
 
 --
--- TOC entry 3414 (class 0 OID 16413)
+-- TOC entry 3414 (class 0 OID 16414)
 -- Dependencies: 227
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: root
 --
@@ -419,9 +428,10 @@ INSERT INTO public.users (id, name, passwd, is_admin) VALUES (1, 'root', 'goool'
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (2, 'bob_parser', '12345678', false);
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (3, 'eggman', '1234', true);
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (4, '123', '123', false);
-INSERT INTO public.users (id, name, passwd, is_admin) VALUES (5, 'qwe', 'qwe', false);
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (6, 'zxc', 'zxc', false);
 INSERT INTO public.users (id, name, passwd, is_admin) VALUES (7, 'asd', 'asd', false);
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (8, 'fgh', 'fgh', false);
+INSERT INTO public.users (id, name, passwd, is_admin) VALUES (5, 'qwe', 'qwe', true);
 
 
 --
@@ -430,7 +440,7 @@ INSERT INTO public.users (id, name, passwd, is_admin) VALUES (7, 'asd', 'asd', f
 -- Name: favorite_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.favorite_id_seq', 4, true);
+SELECT pg_catalog.setval('public.favorite_id_seq', 19, true);
 
 
 --
@@ -439,7 +449,7 @@ SELECT pg_catalog.setval('public.favorite_id_seq', 4, true);
 -- Name: identifiers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.identifiers_id_seq', 7, true);
+SELECT pg_catalog.setval('public.identifiers_id_seq', 8, true);
 
 
 --
@@ -448,7 +458,7 @@ SELECT pg_catalog.setval('public.identifiers_id_seq', 7, true);
 -- Name: ingredients_for_recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 35, true);
+SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 43, true);
 
 
 --
@@ -457,7 +467,7 @@ SELECT pg_catalog.setval('public.ingredients_for_recipes_id_seq', 35, true);
 -- Name: ingredients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.ingredients_id_seq', 12, true);
+SELECT pg_catalog.setval('public.ingredients_id_seq', 19, true);
 
 
 --
@@ -466,7 +476,7 @@ SELECT pg_catalog.setval('public.ingredients_id_seq', 12, true);
 -- Name: recipes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.recipes_id_seq', 20, true);
+SELECT pg_catalog.setval('public.recipes_id_seq', 23, true);
 
 
 --
@@ -475,11 +485,11 @@ SELECT pg_catalog.setval('public.recipes_id_seq', 20, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 7, true);
+SELECT pg_catalog.setval('public.users_id_seq', 8, true);
 
 
 --
--- TOC entry 3243 (class 2606 OID 16426)
+-- TOC entry 3243 (class 2606 OID 16427)
 -- Name: favorite favorite_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -488,7 +498,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3245 (class 2606 OID 16428)
+-- TOC entry 3245 (class 2606 OID 16429)
 -- Name: identifiers identifiers_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -497,7 +507,7 @@ ALTER TABLE ONLY public.identifiers
 
 
 --
--- TOC entry 3249 (class 2606 OID 16430)
+-- TOC entry 3249 (class 2606 OID 16431)
 -- Name: ingredients_for_recipes ingredients_for_recipes_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -506,7 +516,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3247 (class 2606 OID 16432)
+-- TOC entry 3247 (class 2606 OID 16433)
 -- Name: ingredients ingredients_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -515,7 +525,7 @@ ALTER TABLE ONLY public.ingredients
 
 
 --
--- TOC entry 3251 (class 2606 OID 16434)
+-- TOC entry 3251 (class 2606 OID 16435)
 -- Name: recipes recipes_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -524,7 +534,7 @@ ALTER TABLE ONLY public.recipes
 
 
 --
--- TOC entry 3253 (class 2606 OID 16436)
+-- TOC entry 3253 (class 2606 OID 16437)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -533,7 +543,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3257 (class 2606 OID 16437)
+-- TOC entry 3257 (class 2606 OID 16438)
 -- Name: ingredients_for_recipes ingredients_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -542,7 +552,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3254 (class 2606 OID 16442)
+-- TOC entry 3254 (class 2606 OID 16443)
 -- Name: favorite recipe_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -551,7 +561,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3258 (class 2606 OID 16447)
+-- TOC entry 3258 (class 2606 OID 16448)
 -- Name: ingredients_for_recipes recipes_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -560,7 +570,7 @@ ALTER TABLE ONLY public.ingredients_for_recipes
 
 
 --
--- TOC entry 3255 (class 2606 OID 16452)
+-- TOC entry 3255 (class 2606 OID 16453)
 -- Name: favorite user_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -569,7 +579,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- TOC entry 3256 (class 2606 OID 16457)
+-- TOC entry 3256 (class 2606 OID 16458)
 -- Name: identifiers users_connect; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
@@ -577,7 +587,7 @@ ALTER TABLE ONLY public.identifiers
     ADD CONSTRAINT users_connect FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
--- Completed on 2024-12-22 14:44:11 UTC
+-- Completed on 2024-12-23 16:44:07 UTC
 
 --
 -- PostgreSQL database dump complete
