@@ -36,3 +36,6 @@ curl http://127.0.0.1:5252/user/recipe/addToFavorite -X POST -H 'X-USER-KEY: d6d
 
 12) get one recipe
 curl http://127.0.0.1:5252/recipe -X POST -d '{"recipe_id": 20}'
+
+13) get user status
+curl http://127.0.0.1:5252/status -X GET -H 'X-USER-KEY: 05d53a23057a1aa7d634b1092ca3928e88ebde19ee50b85776fc49d8a5e59d48'
