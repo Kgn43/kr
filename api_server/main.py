@@ -566,8 +566,18 @@ def get_user_status(user_key):
     """
     global db_connection
     try:
+        print("[DEBUG] Функция get_user_status вызвана.")
+        print(f"[DEBUG] Получен user_key: {user_key}")
+        
+        # Проверяем, передан ли ключ
+        if not user_key:
+            print("[ERROR] Ключ пользователя не предоставлен.")
+            raise ValueError("Ключ пользователя не предоставлен")
+        
         # Открываем курсор для выполнения запроса
+        print("[DEBUG] Открываем курсор для выполнения запроса.")
         cursor = db_connection.cursor()
+        
         # SQL-запрос для получения статуса пользователя
         query = """
         SELECT u.is_admin
@@ -575,19 +585,26 @@ def get_user_status(user_key):
         JOIN users u ON i.user_id = u.id
         WHERE i.identifier = %s;
         """
+        print(f"[DEBUG] Выполняем запрос: {query}")
         cursor.execute(query, (user_key,))
         result = cursor.fetchone()
+        print(f"[DEBUG] Результат запроса: {result}")
+        
+        # Проверяем, найден ли пользователь
         if not result:
+            print("[ERROR] Пользователь с указанным ключом не найден.")
             raise ValueError("Пользователь с указанным ключом не найден")
 
         is_admin = result[0]  # Получаем статус администратора
-        print(f"Статус пользователя: {'администратор' if is_admin else 'обычный пользователь'}")
+        print(f"[DEBUG] Статус пользователя успешно извлечён: {'администратор' if is_admin else 'обычный пользователь'}")
         return {"is_admin": is_admin}
     except Exception as e:
-        print(f"Ошибка при проверке статуса пользователя: {e}")
+        print(f"[ERROR] Ошибка при проверке статуса пользователя: {e}")
         raise ValueError("Не удалось проверить статус пользователя")
     finally:
+        print("[DEBUG] Закрываем курсор.")
         cursor.close()
+
 
 
 """
