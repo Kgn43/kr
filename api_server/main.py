@@ -606,6 +606,66 @@ def get_status(user_key):
         cursor.close()
 
 
+def is_recipe_in_favourites(user_key, recipe_id):
+    """
+    Проверяет, добавлен ли рецепт в избранное у пользователя.
+    :param user_key: Идентификатор пользователя.
+    :param recipe_id: ID рецепта.
+    :return: Словарь с информацией {"is_favourite": bool}.
+    """
+    global db_connection
+    try:
+        print("[DEBUG] Функция is_recipe_in_favourites вызвана.")
+        print(f"[DEBUG] Получен user_key: {user_key}, recipe_id: {recipe_id}")
+        
+        # Проверяем входные данные
+        if not user_key:
+            print("[ERROR] Ключ пользователя не предоставлен.")
+            raise ValueError("Ключ пользователя не предоставлен")
+        if not recipe_id:
+            print("[ERROR] ID рецепта не предоставлен.")
+            raise ValueError("ID рецепта не предоставлен")
+        
+        # Открываем курсор для выполнения запроса
+        print("[DEBUG] Открываем курсор для выполнения запроса.")
+        cursor = db_connection.cursor()
+        
+        # SQL-запрос для получения ID пользователя
+        query_user = """
+        SELECT user_id 
+        FROM identifiers 
+        WHERE identifier = %s;
+        """
+        print(f"[DEBUG] Выполняем запрос для получения user_id: {query_user}")
+        cursor.execute(query_user, (user_key,))
+        user_id = cursor.fetchone()
+        
+        # Проверяем, найден ли пользователь
+        if not user_id:
+            print("[ERROR] Пользователь с указанным ключом не найден.")
+            raise ValueError("Пользователь с указанным ключом не найден")
+        user_id = user_id[0]
+        print(f"[DEBUG] Пользователь найден: user_id = {user_id}")
+        
+        # SQL-запрос для проверки, находится ли рецепт в избранном
+        query_favourite = """
+        SELECT 1 
+        FROM favorite 
+        WHERE user_id = %s AND recipe_id = %s;
+        """
+        print(f"[DEBUG] Выполняем запрос для проверки избранного: {query_favourite}")
+        cursor.execute(query_favourite, (user_id, recipe_id))
+        is_favourite = cursor.fetchone() is not None
+        
+        print(f"[DEBUG] Результат проверки: {'есть в избранном' if is_favourite else 'нет в избранном'}")
+        return {"is_favourite": is_favourite}
+    except Exception as e:
+        print(f"[ERROR] Ошибка при проверке избранного: {e}")
+        raise ValueError("Не удалось проверить избранное")
+    finally:
+        print("[DEBUG] Закрываем курсор.")
+        cursor.close()
+
 
 """
 
@@ -658,6 +718,8 @@ class Exchanger_server(HTTP_handler):
                 response_data = get_favourite(self.headers.get("X-USER-KEY"))
             elif self.path == "/status":
                 response_data = get_status(self.headers.get("X-USER-KEY"))
+            elif self.path == "/user/favorite/check:
+                response_data = get_favourite(self.headers.get("X-USER-KEY"), self.headers.get("id"))
             else:
                 raise ValueError("Not Found")
         except Exception as ex:
