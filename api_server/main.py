@@ -558,7 +558,7 @@ def get_recipe_details(recipe_id):
     finally:
         cursor.close()
 
-def get_user_status(user_key):
+def get_status(user_key):
     """
     Проверяет статус пользователя (администратор или нет).
     :param user_key: Идентификатор пользователя из заголовка X-USER-KEY.
