@@ -103,10 +103,11 @@ def new_admin(admin_key, user_name):
         cursor.close()
 
 
-def new_recipe(user_key, recipe_name, description, ingredients, way_to_cook):
+def new_recipe(user_key, recipe_name, description, ingredients, way_to_cook, image=None):
     global db_connection
     if not recipe_name or not description or not ingredients or not way_to_cook:
         raise ValueError("Название рецепта, описание, способ приготовления и список ингредиентов не могут быть пустыми")
+    
     try:
         cursor = db_connection.cursor()
 
@@ -132,13 +133,22 @@ def new_recipe(user_key, recipe_name, description, ingredients, way_to_cook):
         print(f"[DEBUG]: Проверка прав доступа успешно пройдена")
         print(f"[DEBUG]: recipe_name = {recipe_name}, description = {description}, way_to_cook = {way_to_cook}")
 
-        # SQL-запрос для вставки нового рецепта
-        insert_recipe_query = """
-        INSERT INTO recipes (name, description, way_to_cook)
-        VALUES (%s, %s, %s)
-        RETURNING id;
-        """
-        cursor.execute(insert_recipe_query, (recipe_name, description, way_to_cook))
+        # SQL-запрос для вставки нового рецепта с изображением (если оно передано)
+        if image:
+            insert_recipe_query = """
+            INSERT INTO recipes (name, description, way_to_cook, image)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id;
+            """
+            cursor.execute(insert_recipe_query, (recipe_name, description, way_to_cook, image))
+        else:
+            insert_recipe_query = """
+            INSERT INTO recipes (name, description, way_to_cook)
+            VALUES (%s, %s, %s)
+            RETURNING id;
+            """
+            cursor.execute(insert_recipe_query, (recipe_name, description, way_to_cook))
+        
         recipe_id = cursor.fetchone()[0]
 
         print(f"[DEBUG]: adding recipe with name \"{recipe_name}\", description \"{description}\" and way to cook \"{way_to_cook}\"")
@@ -157,7 +167,7 @@ def new_recipe(user_key, recipe_name, description, ingredients, way_to_cook):
             if not unit:
                 raise ValueError(f"Единица измерения ингредиента '{ingredient_name}' не может быть пустой")
 
-            print(f"[DEBUG]: ingredient_name = \"{ingredient_name}\"\nquantity = \"{quantity}\"\nunit = \"{unit}\"")
+            print(f"[DEBUG]: ingredient_name = \"{ingredient_name}\" quantity = \"{quantity}\" unit = \"{unit}\"")
 
             # Проверяем существование ингредиента в базе данных
             select_ingredient_query = "SELECT id FROM ingredients WHERE name = %s"
@@ -232,7 +242,7 @@ def get_ingredients():
 def get_recipe():
     """
     Получает список всех рецептов из базы данных.
-    :return: Список словарей с информацией о рецептах (id, name, description).
+    :return: Список словарей с информацией о рецептах (id, name, description, image).
     """
     global db_connection
     try:
@@ -240,13 +250,13 @@ def get_recipe():
         cursor = db_connection.cursor()
         # SQL-запрос для получения рецептов
         select_recipes_query = """
-        SELECT id, name, description FROM recipes;
+        SELECT id, name, description, image FROM recipes;
         """
         cursor.execute(select_recipes_query)
         recipes = cursor.fetchall()
         # Создаём список рецептов с нужной информацией
         recipe_list = [
-            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2], "image": recipe[3]}
             for recipe in recipes
         ]
         # Закрываем курсор
@@ -257,6 +267,7 @@ def get_recipe():
     except Exception as e:
         print(f"Ошибка при получении списка рецептов: {e}")
         raise ValueError("Не удалось получить список рецептов")
+
 
 
 
@@ -307,7 +318,7 @@ def get_favourite(user_key):
     """
     Получает список любимых рецептов пользователя.
     :param user_key: Идентификатор пользователя.
-    :return: Список словарей с информацией о любимых рецептах (id, name, description).
+    :return: Список словарей с информацией о любимых рецептах (id, name, description, image).
     """
     global db_connection
     try:
@@ -322,7 +333,7 @@ def get_favourite(user_key):
         user_id = user_id[0]
         # SQL-запрос для получения любимых рецептов
         select_favourites_query = """
-        SELECT r.id, r.name, r.description
+        SELECT r.id, r.name, r.description, r.image
         FROM favorite f
         JOIN recipes r ON f.recipe_id = r.id
         WHERE f.user_id = %s;
@@ -331,7 +342,7 @@ def get_favourite(user_key):
         favourites = cursor.fetchall()
         # Формируем список любимых рецептов
         favourite_list = [
-            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2], "image": recipe[3]}
             for recipe in favourites
         ]
         print(f"Получено {len(favourite_list)} любимых рецептов пользователя с ID {user_id}.")
@@ -342,6 +353,7 @@ def get_favourite(user_key):
         raise ValueError("Не удалось получить любимые рецепты")
     finally:
         cursor.close()
+
 
 
 
@@ -667,6 +679,76 @@ def is_recipe_in_favourites(user_key, recipe_id):
         cursor.close()
 
 
+def get_user_list(user_key):
+    """
+    Получает список пользователей, если запрашивающий является администратором.
+    :param admin_key: Идентификатор администратора для проверки прав.
+    :return: Словарь с информацией о пользователях.
+    """
+    global db_connection
+    try:
+        print("[DEBUG] Функция get_user_list вызвана.")
+        print(f"[DEBUG] Получен user_key: {user_key}")
+        
+        # Проверяем входные данные
+        if not user_key:
+            print("[ERROR] Ключ пользователя не предоставлен.")
+            raise ValueError("Ключ пользователя не предоставлен")
+        
+        # Открываем курсор для выполнения запроса
+        print("[DEBUG] Открываем курсор для выполнения запроса.")
+        cursor = db_connection.cursor()
+
+        # Если передан user_key, проверяем, является ли пользователь администратором
+        if user_key:
+            # Проверка user_key
+            cursor.execute("SELECT user_id FROM identifiers WHERE identifier = %s;", (user_key,))
+            result = cursor.fetchone()
+            if not result:
+                print("[ERROR] Неверный ключ администратора.")
+                raise ValueError("Неверный ключ администратора")
+            user_id = result[0]
+
+            # Проверка прав администратора
+            cursor.execute("SELECT is_admin FROM users WHERE id = %s;", (user_id,))
+            admin_status = cursor.fetchone()
+            if not admin_status or not admin_status[0]:
+                print("[ERROR] Недостаточно прав.")
+                raise ValueError("Недостаточно прав для выполнения операции.")
+            print("[DEBUG] Администраторские права подтверждены.")
+
+        # SQL-запрос для получения пользователей
+        query_user = """
+        SELECT name 
+        FROM users 
+        """
+        print(f"[DEBUG] Выполняем запрос для получения пользователей: {query_user}")
+        cursor.execute(query_user, ())
+        users = cursor.fetchall()  
+        
+        # Проверяем, найдены ли пользователи
+        if not users:
+            print("[ERROR] Пользователь с указанным ключом не найден.")
+            raise ValueError("Пользователь с указанным ключом не найден")
+        
+        user_list = []
+
+        for user in users:
+            # Формируем список пользователей
+            user_list.append({"name": user[0]})
+        
+        print(f"[DEBUG] Получен список пользователей: {user_list}")
+        return {"users": user_list}
+    
+    except Exception as e:
+        print(f"[ERROR] Ошибка при получении списка пользователей: {e}")
+        raise ValueError("Не удалось получить список пользователей")
+    
+    finally:
+        print("[DEBUG] Закрываем курсор.")
+        cursor.close()
+
+
 """
 
 block of api server class
@@ -687,7 +769,7 @@ class Exchanger_server(HTTP_handler):
 
         try:
             if self.path == "/admin/new/recipe":
-                response_data = new_recipe(self.headers.get("X-USER-KEY"), data.get("name"), data.get("description") , data.get("ingredients"), data.get("way_to_cook"))
+                response_data = new_recipe(self.headers.get("X-USER-KEY"), data.get("name"), data.get("description") , data.get("ingredients"), data.get("way_to_cook"), data.get("image"))
             elif self.path == "/register":
                 response_data = new_user(data.get("user_name"), data.get("user_password"))
             elif self.path == "/admin/new/superuser":
@@ -720,6 +802,8 @@ class Exchanger_server(HTTP_handler):
                 response_data = get_status(self.headers.get("X-USER-KEY"))
             elif self.path == "/user/favorite/check":
                 response_data = is_recipe_in_favourites(self.headers.get("X-USER-KEY"), self.headers.get("id"))
+            elif self.path == "/userList":
+                response_data = get_user_list(self.headers.get("X-USER-KEY"))
             else:
                 raise ValueError("Not Found")
         except Exception as ex:
