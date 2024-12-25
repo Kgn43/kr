@@ -315,10 +315,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: favorite; Type: TABLE DATA; Schema: public; Owner: root
 --
 
-INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (39, 18, 47);
-INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (43, 5, 57);
-INSERT INTO public.favorite (id, user_id, recipe_id) VALUES (44, 21, 57);
-
 
 --
 -- TOC entry 3406 (class 0 OID 16389)
