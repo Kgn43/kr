@@ -1,2 +1,1 @@
-# kr
-my courseworck 
+нужно склонировать репозиторий. Затем перейти в папку с поектом и прописать docker-compose up --build. profit.
