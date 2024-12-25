@@ -1596,7 +1596,6 @@ nXOUJGt2B2SSXNIYEwxGaw4A6NfrBTHc1TTnCrHk6B3IEYBRSk2INOOcW8vBtnrJJaFplI2tNfa9
 o9SUU3m2E8wdfM6xb5s7SJa5JguP0TnnLZewcArL4zgR3NzH6MKZmJgp3GBl34qk/x+RO3iujeHy
 PwAAAABJRU5ErkJggg==
 ');
-INSERT INTO public.recipes (id, name, way_to_cook, description, image) VALUES (59, 'qweqwe', 'qwe', 'qwe', NULL);
 
 
 --
