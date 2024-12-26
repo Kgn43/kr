@@ -342,7 +342,6 @@ INSERT INTO public.ingredients (id, name) VALUES (9, 'капуста');
 INSERT INTO public.ingredients (id, name) VALUES (10, 'свекла');
 INSERT INTO public.ingredients (id, name) VALUES (11, 'морковь');
 INSERT INTO public.ingredients (id, name) VALUES (12, 'свинина');
-INSERT INTO public.ingredients (id, name) VALUES (35, 'угар');
 INSERT INTO public.ingredients (id, name) VALUES (36, 'Говядина');
 INSERT INTO public.ingredients (id, name) VALUES (37, 'Сливочное масло');
 INSERT INTO public.ingredients (id, name) VALUES (38, 'Лук');
