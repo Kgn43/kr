@@ -294,7 +294,7 @@ def get_recipe_by_filter(include_ingredients, exclude_ingredients):
         ) if exclude_ingredients else "TRUE"
         # Основной запрос
         query = f"""
-        SELECT r.id, r.name, r.description
+        SELECT r.id, r.name, r.description, image
         FROM recipes r
         WHERE {include_condition} AND {exclude_condition};
         """
@@ -302,7 +302,7 @@ def get_recipe_by_filter(include_ingredients, exclude_ingredients):
         recipes = cursor.fetchall()
         # Создаём список рецептов с нужной информацией
         result = [
-            {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+            {"id": recipe[0], "name": recipe[1], "description": recipe[2], "image": recipe[3]}
             for recipe in recipes
         ]
         return result
